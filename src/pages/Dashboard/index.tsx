@@ -48,50 +48,44 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <>
-      <SafeAreaView style={styles.container}>
-        <Image style={styles.logo} source={logo} />
-        <TextInput
-          value={inputText}
-          style={styles.inputRepository}
-          placeholder="Digite o nome do repositório"
-          autoCapitalize="none"
-          autoCorrect={false}
-          onChangeText={setInputText}
-        />
-        <TouchableOpacity
-          onPress={handleAddRepo}
-          style={styles.buttonPesquisar}>
-          <Text style={styles.buttonTitle}>Pesquisar</Text>
-        </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <Image style={styles.logo} source={logo} />
+      <TextInput
+        value={inputText}
+        style={styles.inputRepository}
+        placeholder="Digite o nome do repositório"
+        autoCapitalize="none"
+        autoCorrect={false}
+        onChangeText={setInputText}
+      />
+      <TouchableOpacity onPress={handleAddRepo} style={styles.buttonPesquisar}>
+        <Text style={styles.buttonTitle}>Pesquisar</Text>
+      </TouchableOpacity>
 
-        <FlatList
-          data={repositories}
-          keyExtractor={(repository) => repository.full_name}
-          showsVerticalScrollIndicator={false}
-          onEndReachedThreshold={0.1}
-          renderItem={({item: repository}) => (
-            <TouchableOpacity
-              style={styles.cardRepository}
-              onPress={handleNavigateToRepository}>
-              <Image
-                style={styles.imageRepository}
-                source={{
-                  uri: `${repository.owner.avatar_url}`,
-                }}
-              />
-              <View style={styles.cardTexts}>
-                <Text style={styles.cardTitle}>{repository.full_name}</Text>
-                <Text style={styles.cardSubTitle}>
-                  {repository.description}
-                </Text>
-              </View>
-              <Icon style={styles.cardIcon} name="chevron-right" size={20} />
-            </TouchableOpacity>
-          )}
-        />
-      </SafeAreaView>
-    </>
+      <FlatList
+        data={repositories}
+        keyExtractor={(repository) => repository.full_name}
+        showsVerticalScrollIndicator={false}
+        onEndReachedThreshold={0.1}
+        renderItem={({item: repository}) => (
+          <TouchableOpacity
+            style={styles.cardRepository}
+            onPress={handleNavigateToRepository}>
+            <Image
+              style={styles.imageRepository}
+              source={{
+                uri: `${repository.owner.avatar_url}`,
+              }}
+            />
+            <View style={styles.cardTexts}>
+              <Text style={styles.cardTitle}>{repository.full_name}</Text>
+              <Text style={styles.cardSubTitle}>{repository.description}</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color="#A8A8B3" />
+          </TouchableOpacity>
+        )}
+      />
+    </SafeAreaView>
   );
 };
 
@@ -148,9 +142,6 @@ const styles = StyleSheet.create({
     color: '#3A3A3A',
   },
   cardSubTitle: {
-    color: '#A8A8B3',
-  },
-  cardIcon: {
     color: '#A8A8B3',
   },
 });
