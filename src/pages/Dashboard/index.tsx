@@ -1,4 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
+
 import {
   View,
   Text,
@@ -7,42 +9,89 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
+  FlatList,
 } from 'react-native';
+
+import api from '../../services/api';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import logo from '../../assets/logo.png';
 
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
 const Dashboard: React.FC = () => {
+  const [inputText, setInputText] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+
+  const navigation = useNavigation();
+
+  async function handleAddRepo() {
+    const response = await api.get<Repository>(`repos/${inputText}`);
+
+    const repository = response.data;
+
+    setRepositories([...repositories, repository]);
+
+    setInputText('');
+  }
+
+  function handleNavigateToRepository() {
+    navigation.navigate('Repository');
+  }
+
   return (
-    <SafeAreaView>
-      <View style={styles.container}>
+    <>
+      <SafeAreaView style={styles.container}>
         <Image style={styles.logo} source={logo} />
         <TextInput
+          value={inputText}
           style={styles.inputRepository}
           placeholder="Digite o nome do repositório"
+          autoCapitalize="none"
+          autoCorrect={false}
+          onChangeText={setInputText}
         />
-        <TouchableOpacity style={styles.buttonPesquisar}>
+        <TouchableOpacity
+          onPress={handleAddRepo}
+          style={styles.buttonPesquisar}>
           <Text style={styles.buttonTitle}>Pesquisar</Text>
         </TouchableOpacity>
-        <View style={styles.cardRepository}>
-          <Image
-            style={styles.imageRepository}
-            source={{
-              uri:
-                'https://avatars2.githubusercontent.com/u/33940202?s=460&u=5af5f22d17416b6dd503e9e38163263984e55903&v=4',
-            }}
-          />
-          <View style={styles.cardTexts}>
-            <Text style={styles.cardTitle}>
-              franciscojunior10/github-explorer
-            </Text>
-            <Text style={styles.cardSubTitle}>Descrição do repo</Text>
-          </View>
-          <Icon style={styles.cardIcon} name="chevron-right" size={30} />
-        </View>
-      </View>
-    </SafeAreaView>
+
+        <FlatList
+          data={repositories}
+          keyExtractor={(repository) => repository.full_name}
+          showsVerticalScrollIndicator={false}
+          onEndReachedThreshold={0.1}
+          renderItem={({item: repository}) => (
+            <TouchableOpacity
+              style={styles.cardRepository}
+              onPress={handleNavigateToRepository}>
+              <Image
+                style={styles.imageRepository}
+                source={{
+                  uri: `${repository.owner.avatar_url}`,
+                }}
+              />
+              <View style={styles.cardTexts}>
+                <Text style={styles.cardTitle}>{repository.full_name}</Text>
+                <Text style={styles.cardSubTitle}>
+                  {repository.description}
+                </Text>
+              </View>
+              <Icon style={styles.cardIcon} name="chevron-right" size={20} />
+            </TouchableOpacity>
+          )}
+        />
+      </SafeAreaView>
+    </>
   );
 };
 
@@ -84,7 +133,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#FFFF',
     paddingLeft: 5,
-    marginTop: 100,
+    marginTop: 20,
   },
   imageRepository: {
     width: 50,
@@ -103,7 +152,6 @@ const styles = StyleSheet.create({
   },
   cardIcon: {
     color: '#A8A8B3',
-    marginLeft: 20,
   },
 });
 
