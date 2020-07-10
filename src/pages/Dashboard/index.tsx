@@ -43,8 +43,10 @@ const Dashboard: React.FC = () => {
     setInputText('');
   }
 
-  function handleNavigateToRepository() {
-    navigation.navigate('Repository');
+  function handleNavigateToRepository(full_name: string) {
+    navigation.navigate('Repository', {
+      full_name,
+    });
   }
 
   return (
@@ -70,7 +72,7 @@ const Dashboard: React.FC = () => {
         renderItem={({item: repository}) => (
           <TouchableOpacity
             style={styles.cardRepository}
-            onPress={handleNavigateToRepository}>
+            onPress={() => handleNavigateToRepository(repository.full_name)}>
             <Image
               style={styles.imageRepository}
               source={{

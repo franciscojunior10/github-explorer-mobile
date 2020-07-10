@@ -1,5 +1,5 @@
-import React from 'react';
-import {useNavigation} from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 import {
   View,
@@ -8,15 +8,60 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  FlatList,
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import api from '../../services/api';
+
+interface Repository {
+  full_name: string;
+  description: string;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
+interface Issue {
+  id: number;
+  title: string;
+  html_url: string;
+  user: {
+    login: string;
+  };
+}
+
 const Repository: React.FC = () => {
+  const [repository, setRepository] = useState<Repository | null>(null);
+  const [issues, setIssues] = useState<Issue[]>([]);
+
   const navigation = useNavigation();
+  const route = useRoute();
+
+  const routeParams = route.params as Repository;
+
+  useEffect(() => {
+    api.get(`repos/${routeParams.full_name}`).then((response) => {
+      setRepository(response.data);
+    });
+    api.get(`repos/${routeParams.full_name}/issues`).then((response) => {
+      setIssues(response.data);
+    });
+  }, [routeParams.full_name]);
 
   function handleNavigateBack() {
     navigation.goBack();
+  }
+
+  function handleIssue(html_url: string) {
+    navigation.navigate('WebViewIssue', {
+      html_url,
+    });
   }
 
   return (
@@ -30,41 +75,50 @@ const Repository: React.FC = () => {
       <Image
         style={styles.imageLogo}
         source={{
-          uri:
-            'https://avatars2.githubusercontent.com/u/33940202?s=460&u=5af5f22d17416b6dd503e9e38163263984e55903&v=4',
+          uri: `${repository?.owner.avatar_url}`,
         }}
       />
-      <Text style={styles.repositoryTitle}>
-        franciscojunior10/github-explorer
-      </Text>
-      <Text style={styles.repositorySubTitle}>Descrição do repo</Text>
+      <Text style={styles.repositoryTitle}>{repository?.full_name}</Text>
+      <Text style={styles.repositorySubTitle}>{repository?.description}</Text>
 
       <View style={styles.cardInfo}>
         <View style={styles.cardInfoText}>
-          <Text style={styles.cardTitle}>1213</Text>
+          <Text style={styles.cardTitle}>{repository?.stargazers_count}</Text>
           <Text style={styles.cardSubTitle}>Stars</Text>
         </View>
         <View style={styles.cardInfoText}>
-          <Text style={styles.cardTitle}>34</Text>
+          <Text style={styles.cardTitle}>{repository?.forks_count}</Text>
           <Text style={styles.cardSubTitle}>Forks</Text>
         </View>
         <View style={styles.cardInfoText}>
-          <Text style={styles.cardTitle}>13</Text>
+          <Text style={styles.cardTitle}>{repository?.open_issues_count}</Text>
           <Text style={styles.cardSubTitle}>Issues abertas</Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.cardRepository}>
-        <View style={styles.cardTexts}>
-          <Text style={styles.cardTitleRepository}>dfdfsdfs</Text>
-          <Text style={styles.cardSubTitleRepository}>fdsfsdfsd</Text>
-        </View>
-        <Icon
-          style={styles.cardIcon}
-          name="chevron-right"
-          size={20}
-          color="#A8A8B3"
-        />
-      </TouchableOpacity>
+      <FlatList
+        data={issues}
+        keyExtractor={(issue) => issue.title}
+        showsVerticalScrollIndicator={false}
+        onEndReachedThreshold={0.1}
+        renderItem={({item: issue}) => (
+          <TouchableOpacity
+            style={styles.cardRepository}
+            onPress={() => handleIssue(issue.html_url)}>
+            <View style={styles.cardTexts}>
+              <Text style={styles.cardTitleRepository}>{issue.title}</Text>
+              <Text style={styles.cardSubTitleRepository}>
+                {issue.user.login}
+              </Text>
+            </View>
+            <Icon
+              style={styles.cardIcon}
+              name="chevron-right"
+              size={20}
+              color="#A8A8B3"
+            />
+          </TouchableOpacity>
+        )}
+      />
     </SafeAreaView>
   );
 };
@@ -121,6 +175,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#FFFF',
     paddingLeft: 5,
+    marginTop: 20,
   },
   cardTexts: {
     paddingLeft: 10,
